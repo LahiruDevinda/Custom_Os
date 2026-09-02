@@ -33,6 +33,7 @@ static void cmd_clear(void);
 static void cmd_about(void);
 static void cmd_echo(const char *args);
 static void cmd_mem(void);
+static void cmd_greet(const char *args);
 
 /* ---------------------------------------------------------------------------
  * Utility: minimal string helpers (no libc in a freestanding kernel!)
@@ -103,6 +104,10 @@ static void print_splash(void) {
     vga_puts_color("    [L12] ", VGA_YELLOW, VGA_BLACK);
     vga_puts("File System         – RAM disk, FAT-like directory structure\n");
     vga_puts("\n");
+    
+    vga_set_cursor(22, 2);
+    vga_set_color(VGA_YELLOW, VGA_BLACK);
+    vga_puts("Hello. This text for testing :-/");
 }
 
 /* ---------------------------------------------------------------------------
@@ -159,6 +164,14 @@ static void cmd_mem(void) {
                    VGA_YELLOW, VGA_BLACK);
 }
 
+//print greeting message
+static void cmd_greet(const char *args) {
+
+    vga_puts_color("Hello, ",VGA_YELLOW, VGA_BLACK);
+    vga_puts_color(args, VGA_LIGHT_CYAN, VGA_BLACK);
+    
+}
+
 /* ---------------------------------------------------------------------------
  * Shell process
  * --------------------------------------------------------------------------*/
@@ -185,6 +198,10 @@ static void shell_run(void) {
 
         if (k_strncmp(cmd, "echo ", 5) == 0) {
             cmd_echo(k_ltrim(cmd + 5));
+            continue;
+        }
+         if (k_strncmp(cmd, "greet ", 5) == 0) {
+            cmd_greet(k_ltrim(cmd + 5));
             continue;
         }
 
