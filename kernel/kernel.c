@@ -66,48 +66,68 @@ static const char *k_ltrim(const char *s) {
 static void print_splash(void) {
     vga_clear(VGA_BLACK);
 
-    /* Top banner box */
-    vga_draw_box(0, 0, 7, 80, VGA_LIGHT_MAGENTA);
+    /* Outer border frame */
+    vga_draw_box(0, 0, 8, 80, VGA_CYAN);
 
-    vga_set_cursor(1, 2);
-    vga_puts_color("  SENG21213-OS  |  Computer Architecture & Operating Systems",
-                   VGA_YELLOW, VGA_BLACK);
+    /* ASCII Header Logo */
+    vga_set_cursor(1, 4);
+    vga_puts_color("  ____  _____ _   _  ____ ____  _ ____  _ _____        ___  ____ ",
+                   VGA_LIGHT_CYAN, VGA_BLACK);
+    vga_set_cursor(2, 4);
+    vga_puts_color(" / ___|| ____| \\ | |/ ___|___ \\/ |___ \\/ |___ /       / _ \\/ ___|",
+                   VGA_LIGHT_CYAN, VGA_BLACK);
+    vga_set_cursor(3, 4);
+    vga_puts_color(" \\___ \\|  _| |  \\| | |  _  __) | | __) | | |_ \\ _____| | | \\___ \\",
+                   VGA_LIGHT_CYAN, VGA_BLACK);
+    vga_set_cursor(4, 4);
+    vga_puts_color("  ___) | |___| |\\  | |_| |/ __/| |/ __/| |___) |_____| |_| |___) |",
+                   VGA_WHITE, VGA_BLACK);
+    vga_set_cursor(5, 4);
+    vga_puts_color(" |____/|_____|_| \\_|\\____|_____|_|_____|_|____/       \\___/|____/ ",
+                   VGA_WHITE, VGA_BLACK);               
 
-    vga_set_cursor(2, 2);
-    vga_puts_color("  Stage 0: Kernel Foundations", VGA_LIGHT_CYAN, VGA_BLACK);
+    vga_set_cursor(6, 12);
+    vga_puts_color("x86 Protected Mode Kernel  ::  Stage 0 Foundations",
+                   VGA_LIGHT_MAGENTA, VGA_BLACK);
+    /* My Profile Box */
+    vga_set_cursor(9, 2);
+    vga_puts_color("Hello, ", VGA_LIGHT_GREEN, VGA_BLACK);
 
-    vga_set_cursor(3, 2);
-    vga_puts_color("  Faculty of Engineering – Department of Software Engineering",
-                   VGA_LIGHT_GREY, VGA_BLACK);
+    vga_set_cursor(10, 4);
+    vga_puts_color("I am Lahiru Devinda", VGA_YELLOW, VGA_BLACK);
 
-    vga_set_cursor(4, 2);
-    vga_puts_color("  Built by students, for students.  Type 'help' to begin.",
-                   VGA_LIGHT_GREEN, VGA_BLACK);
+    vga_set_cursor(11, 4);
+    vga_puts_color("Index Number  : ", VGA_LIGHT_GREY, VGA_BLACK);
+    vga_puts_color("SE/2023/041", VGA_LIGHT_GREEN, VGA_BLACK);
 
-    vga_set_cursor(5, 2);
-    vga_puts_color("  CPU: i686 (32-bit Protected Mode)  |  Display: VGA 80x25",
-                   VGA_DARK_GREY, VGA_BLACK);
+    vga_set_cursor(12, 4);
+    vga_puts_color("Department    : ", VGA_LIGHT_GREY, VGA_BLACK);
+    vga_puts_color("Software Engineering Teaching Unit | Faculty of Science", VGA_LIGHT_GREY, VGA_BLACK);
 
-    vga_set_cursor(8, 0);
-    vga_set_color(VGA_LIGHT_GREY, VGA_BLACK);
-    vga_puts("  Welcome! This kernel was compiled from source and booted entirely\n");
-    vga_puts("  from bare metal. There is no Linux or Windows underneath – only\n");
-    vga_puts("  the code you and your team write.\n");
-    vga_puts("\n");
-    vga_puts("  Assignment milestones to implement:\n");
-    vga_puts_color("    [L09] ", VGA_YELLOW, VGA_BLACK);
-    vga_puts("Process Management  – PCB, ready queue, round-robin scheduler\n");
-    vga_puts_color("    [L10] ", VGA_YELLOW, VGA_BLACK);
-    vga_puts("Threads & Sync      – kernel threads, mutex, semaphore\n");
-    vga_puts_color("    [L11] ", VGA_YELLOW, VGA_BLACK);
-    vga_puts("Memory Management   – physical page allocator, virtual memory\n");
-    vga_puts_color("    [L12] ", VGA_YELLOW, VGA_BLACK);
-    vga_puts("File System         – RAM disk, FAT-like directory structure\n");
-    vga_puts("\n");
+    /* Hardware & Kernel Environment Badges */
+    vga_set_cursor(14, 2);
+    vga_puts_color("[ BOOT ENVIRONMENT ]", VGA_LIGHT_GREEN, VGA_BLACK);
+
+    vga_set_cursor(15, 4);
+    vga_puts_color("CPU Mode  : ", VGA_LIGHT_GREY, VGA_BLACK);
+    vga_puts_color("32-bit x86 Protected Mode (i686)", VGA_LIGHT_CYAN, VGA_BLACK);
+
+    vga_set_cursor(16, 4);
+    vga_puts_color("Display   : ", VGA_LIGHT_GREY, VGA_BLACK);
+    vga_puts_color("VGA 80x25 Color Text Mode Buffer [0xB8000]", VGA_LIGHT_CYAN, VGA_BLACK);
+
+    vga_set_cursor(17, 4);
+    vga_puts_color("Keyboard  : ", VGA_LIGHT_GREY, VGA_BLACK);
+    vga_puts_color("PS/2 Polling Controller Ready", VGA_LIGHT_GREEN, VGA_BLACK);
+
+    /* Interactive Instruction at Bottom */
     
-    vga_set_cursor(22, 2);
-    vga_set_color(VGA_YELLOW, VGA_BLACK);
-    vga_puts("Hello. This text for testing :-/");
+    vga_set_cursor(20, 0);
+    vga_puts_color("  System initialized successfully. Type ", VGA_WHITE, VGA_BLACK);
+    vga_puts_color("'help'", VGA_YELLOW, VGA_BLACK);
+    vga_puts_color(" to explore available commands.", VGA_WHITE, VGA_BLACK);
+
+    vga_set_cursor(22, 0);
 }
 
 /* ---------------------------------------------------------------------------
@@ -115,19 +135,19 @@ static void print_splash(void) {
  * --------------------------------------------------------------------------*/
 static void cmd_help(void) {
     vga_puts_color("\n  SENG21213-OS Shell Commands\n", VGA_YELLOW, VGA_BLACK);
-    vga_puts("  ─────────────────────────────────────────────\n");
-    vga_puts("  help    – Show this help message\n");
-    vga_puts("  clear   – Clear the screen\n");
-    vga_puts("  about   – About this OS and course\n");
-    vga_puts("  echo    – Echo text to screen\n");
-    vga_puts("  mem     – Memory map (stub)\n");
+    vga_puts("  ------------------------------------------------\n");
+    vga_puts("  help    - Show this help message\n");
+    vga_puts("  clear   - Clear the screen\n");
+    vga_puts("  about   - About this OS and course\n");
+    vga_puts("  echo    - Echo text to screen\n");
+    vga_puts("  mem     - Memory map (stub)\n");
     vga_puts_color("\n  Milestones (to implement):\n", VGA_LIGHT_CYAN, VGA_BLACK);
-    vga_puts("  ps      – [L09] List processes\n");
-    vga_puts("  kill    – [L09] Terminate a process\n");
-    vga_puts("  threads – [L10] List kernel threads\n");
-    vga_puts("  free    – [L11] Show free memory\n");
-    vga_puts("  ls      – [L12] List files\n");
-    vga_puts("  cat     – [L12] Print file contents\n\n");
+    vga_puts("  ps      - [L09] List processes\n");
+    vga_puts("  kill    - [L09] Terminate a process\n");
+    vga_puts("  threads - [L10] List kernel threads\n");
+    vga_puts("  free    - [L11] Show free memory\n");
+    vga_puts("  ls      - [L12] List files\n");
+    vga_puts("  cat     - [L12] Print file contents\n\n");
 }
 
 static void cmd_clear(void) {
@@ -136,12 +156,12 @@ static void cmd_clear(void) {
 
 static void cmd_about(void) {
     vga_puts_color("\n  About SENG21213-OS\n", VGA_LIGHT_CYAN, VGA_BLACK);
-    vga_puts("  ─────────────────────────────────────────────\n");
+    vga_puts("  ---------------------------------------------\n");
     vga_puts("  Architecture : x86 (i686), 32-bit Protected Mode\n");
     vga_puts("  Bootloader   : Custom MBR (NASM)\n");
     vga_puts("  Kernel       : Freestanding C (GCC, no libc)\n");
     vga_puts("  VM Target    : QEMU (qemu-system-i386)\n");
-    vga_puts("  Course       : SENG 21213 – Sem 2\n");
+    vga_puts("  Course       : SENG 21213 - Sem 2\n");
     vga_puts("  Reference    : Stallings, OS: Internals & Design Principles\n\n");
 }
 
@@ -153,13 +173,13 @@ static void cmd_echo(const char *args) {
 
 static void cmd_mem(void) {
     /* Stage 0 stub – students implement the real PMM in Lecture 11 */
-    vga_puts_color("\n  Memory Map (stub – implement PMM in Lecture 11)\n",
+    vga_puts_color("\n  Memory Map (stub - implement PMM in Lecture 11)\n",
                    VGA_LIGHT_CYAN, VGA_BLACK);
-    vga_puts("  ─────────────────────────────────────────────\n");
-    vga_puts("  0x00000000 – 0x000FFFFF  :  First 1 MB (reserved/BIOS)\n");
-    vga_puts("  0x00100000 – 0x00EFFFFF  :  Extended memory (usable ~14 MB)\n");
-    vga_puts("  0x00F00000 – 0x00FFFFFF  :  BIOS / ROM area\n");
-    vga_puts("  0xB8000    – 0xBFFFF     :  VGA frame buffer\n");
+    vga_puts("  ---------------------------------------------\n");
+    vga_puts("  0x00000000 - 0x000FFFFF  :  First 1 MB (reserved/BIOS)\n");
+    vga_puts("  0x00100000 - 0x00EFFFFF  :  Extended memory (usable ~14 MB)\n");
+    vga_puts("  0x00F00000 - 0x00FFFFFF  :  BIOS / ROM area\n");
+    vga_puts("  0xB8000    - 0xBFFFF     :  VGA frame buffer\n");
     vga_puts_color("\n  TODO: Use BIOS int 0x15, EAX=0xE820 to get real memory map\n\n",
                    VGA_YELLOW, VGA_BLACK);
 }
@@ -179,8 +199,6 @@ static char  shell_buf[256];
 static char  prompt[] = "\n  ksh> ";
 
 static void shell_run(void) {
-    vga_puts_color("\n  Kernel Shell ready. Type 'help' for commands.\n",
-                   VGA_LIGHT_GREEN, VGA_BLACK);
 
     while (true) {
         vga_puts_color(prompt, VGA_LIGHT_GREEN, VGA_BLACK);
