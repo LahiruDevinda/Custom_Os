@@ -44,23 +44,19 @@ endif
 BOOT_SRC  := boot/boot.asm
 BOOT_BIN  := boot/boot.bin
 
-KERNEL_ASM_SRC := kernel/kernel_entry.asm
-KERNEL_ASM_OBJ := build/kernel_entry.o
+KERNEL_ASM_SRCS := kernel/kernel_entry.asm \
+                   kernel/switch.asm
+KERNEL_ASM_OBJS := $(patsubst kernel/%.asm, build/%.o, $(KERNEL_ASM_SRCS))
 
-KERNEL_C_SRCS  := kernel/kernel.c \
+KERNEL_C_SRCS   := kernel/kernel.c \
                    kernel/vga.c    \
-                   kernel/keyboard.c
+                   kernel/keyboard.c \
+                   kernel/process.c
+KERNEL_C_OBJS   := $(patsubst kernel/%.c, build/%.o, $(KERNEL_C_SRCS))
 
-# Add your new source files below as the course progresses:
-# Lecture 09: kernel/process.c kernel/scheduler.c
-# Lecture 10: kernel/thread.c  kernel/mutex.c
-# Lecture 11: kernel/pmm.c     kernel/vmm.c
-# Lecture 12: kernel/fs.c
-
-KERNEL_C_OBJS  := $(patsubst kernel/%.c, build/%.o, $(KERNEL_C_SRCS))
-KERNEL_ELF     := build/kernel.elf
-KERNEL_BIN     := build/kernel.bin
-OS_IMAGE       := seng21213-os.img
+KERNEL_ELF      := build/kernel.elf
+KERNEL_BIN      := build/kernel.bin
+OS_IMAGE        := seng21213-os.img
 
 # ---------------------------------------------------------------------------
 # Default target
@@ -84,7 +80,7 @@ $(BOOT_BIN): $(BOOT_SRC)
 # ---------------------------------------------------------------------------
 # Kernel: Assembly object
 # ---------------------------------------------------------------------------
-$(KERNEL_ASM_OBJ): $(KERNEL_ASM_SRC)
+build/%.o: kernel/%.asm
 	@mkdir -p build
 	@echo "  [AS]  $<"
 	$(AS) $(ASFLAGS) $< -o $@
@@ -100,7 +96,7 @@ build/%.o: kernel/%.c
 # ---------------------------------------------------------------------------
 # Link kernel ELF, then extract flat binary
 # ---------------------------------------------------------------------------
-$(KERNEL_ELF): $(KERNEL_ASM_OBJ) $(KERNEL_C_OBJS)
+$(KERNEL_ELF): $(KERNEL_ASM_OBJS) $(KERNEL_C_OBJS)
 	@echo "  [LD]  $@"
 	$(LD) $(LDFLAGS) -T linker.ld $^ -o $@
 

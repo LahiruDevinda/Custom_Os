@@ -24,6 +24,7 @@
 #include "vga.h"
 #include "keyboard.h"
 #include "../include/types.h"
+#include "process.h"
 
 /* ---------------------------------------------------------------------------
  * Forward declarations of shell commands
@@ -33,7 +34,6 @@ static void cmd_clear(void);
 static void cmd_about(void);
 static void cmd_echo(const char *args);
 static void cmd_mem(void);
-static void cmd_greet(const char *args);
 
 /* ---------------------------------------------------------------------------
  * Utility: minimal string helpers (no libc in a freestanding kernel!)
@@ -141,8 +141,12 @@ static void cmd_help(void) {
     vga_puts("  about   - About this OS and course\n");
     vga_puts("  echo    - Echo text to screen\n");
     vga_puts("  mem     - Memory map (stub)\n");
+    vga_puts("  ps      - List processes\n");
+    vga_puts("  spawn   - execute demo tasks\n");
+    vga_puts("  yield   - Relinquish CPU to switch to the next ready process\n");
+    vga_puts("  kill    - Terminate a process by its PID\n");
+    
     vga_puts_color("\n  Milestones (to implement):\n", VGA_LIGHT_CYAN, VGA_BLACK);
-    vga_puts("  ps      - [L09] List processes\n");
     vga_puts("  kill    - [L09] Terminate a process\n");
     vga_puts("  threads - [L10] List kernel threads\n");
     vga_puts("  free    - [L11] Show free memory\n");
@@ -184,12 +188,22 @@ static void cmd_mem(void) {
                    VGA_YELLOW, VGA_BLACK);
 }
 
-//print greeting message
-static void cmd_greet(const char *args) {
+static void demo_task_a(void) {
+    for (int i = 0; i < 3; i++) {
+        vga_puts_color("  [Task A] Executing work...\n", VGA_LIGHT_CYAN, VGA_BLACK);
+        process_yield();
+    }
+    vga_puts_color("  [Task A] Completed.\n", VGA_LIGHT_GREEN, VGA_BLACK);
+    process_exit();
+}
 
-    vga_puts_color("Hello, ",VGA_YELLOW, VGA_BLACK);
-    vga_puts_color(args, VGA_LIGHT_CYAN, VGA_BLACK);
-    
+static void demo_task_b(void) {
+    for (int i = 0; i < 3; i++) {
+        vga_puts_color("  [Task B] Running background computation...\n", VGA_LIGHT_MAGENTA, VGA_BLACK);
+        process_yield();
+    }
+    vga_puts_color("  [Task B] Completed.\n", VGA_LIGHT_GREEN, VGA_BLACK);
+    process_exit();
 }
 
 /* ---------------------------------------------------------------------------
@@ -218,15 +232,27 @@ static void shell_run(void) {
             cmd_echo(k_ltrim(cmd + 5));
             continue;
         }
-         if (k_strncmp(cmd, "greet ", 5) == 0) {
-            cmd_greet(k_ltrim(cmd + 5));
+        if (k_strcmp(cmd, "ps") == 0) {
+            cmd_ps();
+            continue;
+        }
+        if (k_strncmp(cmd, "kill ", 5) == 0) {
+            cmd_kill(cmd + 5);
+            continue;
+        }
+        if (k_strcmp(cmd, "spawn") == 0) {
+            create_process("worker_a", demo_task_a, 2);
+            create_process("worker_b", demo_task_b, 2);
+            vga_puts_color("  Spawned worker_a and worker_b tasks.\n", VGA_LIGHT_GREEN, VGA_BLACK);
+            continue;
+        }
+        if (k_strcmp(cmd, "yield") == 0) {
+            process_yield();
             continue;
         }
 
         /* Milestone stubs */
-        if (k_strcmp(cmd, "ps")      == 0 ||
-            k_strcmp(cmd, "kill")    == 0 ||
-            k_strcmp(cmd, "threads") == 0 ||
+        if (k_strcmp(cmd, "threads") == 0 ||
             k_strcmp(cmd, "free")    == 0 ||
             k_strcmp(cmd, "ls")      == 0 ||
             k_strcmp(cmd, "cat")     == 0) {
@@ -248,6 +274,7 @@ static void shell_run(void) {
 void kernel_main(void) {
     vga_init();
     kb_init();
+    process_init();
     print_splash();
     shell_run();
 
