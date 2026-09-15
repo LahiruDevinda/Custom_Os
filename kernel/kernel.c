@@ -27,6 +27,7 @@
 #include "process.h"
 #include "thread.h"
 #include "pmm.h"
+#include "fs.h"
 
 
 static mutex_t test_lock;
@@ -142,19 +143,21 @@ static void print_splash(void) {
 static void cmd_help(void) {
     vga_puts_color("\n  SENG21213-OS Shell Commands\n", VGA_YELLOW, VGA_BLACK);
     vga_puts("  ------------------------------------------------\n");
-    vga_puts("  help        - Show this help message\n");
-    vga_puts("  clear       - Clear the screen\n");
-    vga_puts("  about       - About this OS and course\n");
-    vga_puts("  echo        - Echo text to screen\n");
-    vga_puts("  mem         - Memory map (stub)\n");
-    vga_puts("  ps          - List processes\n");
-    vga_puts("  spawn       - execute demo tasks\n");
-    vga_puts("  yield       - Relinquish CPU to switch to the next ready process\n");
-    vga_puts("  kill        - Terminate a process by its PID\n");
-    vga_puts("  threads     - List active kernel threads\n");
-    vga_puts("  thread_demo - Create two synchronized worker threads\n");
-    vga_puts("  thread_run  - Yield CPU to run ready worker threads\n");
-    vga_puts("  free        - Display physical memory page allocation stats\n");
+    vga_puts("  help            - Show this help message\n");
+    vga_puts("  clear           - Clear the screen\n");
+    vga_puts("  about           - About this OS and course\n");
+    vga_puts("  echo            - Echo text to screen\n");
+    vga_puts("  mem             - Memory map (stub)\n");
+    vga_puts("  ps              - List processes\n");
+    vga_puts("  spawn           - execute demo tasks\n");
+    vga_puts("  yield           - Relinquish CPU to switch to the next ready process\n");
+    vga_puts("  kill            - Terminate a process by its PID\n");
+    vga_puts("  threads         - List active kernel threads\n");
+    vga_puts("  thread_demo     - Create two synchronized worker threads\n");
+    vga_puts("  thread_run      - Yield CPU to run ready worker threads\n");
+    vga_puts("  free            - Display physical memory page allocation stats\n");
+    vga_puts("  ls              - List files in the RAM disk\n");
+    vga_puts("  cat <filename>  - Read and display file contents\n\n");
     
     vga_puts_color("\n  Milestones (to implement):\n", VGA_LIGHT_CYAN, VGA_BLACK);
     vga_puts("  ls      - [L12] List files\n");
@@ -173,6 +176,8 @@ static void cmd_about(void) {
     vga_puts("  Kernel       : Freestanding C (GCC, no libc)\n");
     vga_puts("  VM Target    : QEMU (qemu-system-i386)\n");
     vga_puts("  Course       : SENG 21213 - Sem 2\n");
+    vga_puts("  Student Name : Devinda HBL\n");
+    vga_puts("  Student No   : SE/2023/041\n");
     vga_puts("  Reference    : Stallings, OS: Internals & Design Principles\n\n");
 }
 
@@ -299,13 +304,13 @@ static void shell_run(void) {
             cmd_free();
             continue;
         }
-
-        /* Milestone stubs */
-        if (k_strcmp(cmd, "ls")      == 0 ||
-            k_strcmp(cmd, "cat")     == 0) {
-            vga_puts_color("  [TODO] This command is not yet implemented.\n",
-                           VGA_YELLOW, VGA_BLACK);
-            vga_puts("  Implement it as part of your lecture assignment.\n");
+        
+        if (k_strcmp(cmd, "ls") == 0) {
+            cmd_ls();
+            continue;
+        }
+        if (k_strncmp(cmd, "cat ", 4) == 0) {
+            cmd_cat(cmd + 4);
             continue;
         }
 
@@ -325,6 +330,7 @@ void kernel_main(void) {
     process_init();
     thread_init();
     mutex_init(&test_lock);
+    fs_init();
     print_splash();
     shell_run();
     
