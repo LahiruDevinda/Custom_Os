@@ -25,6 +25,11 @@
 #include "keyboard.h"
 #include "../include/types.h"
 #include "process.h"
+#include "thread.h"
+
+
+static mutex_t test_lock;
+static volatile int counter = 0;
 
 /* ---------------------------------------------------------------------------
  * Forward declarations of shell commands
@@ -145,10 +150,11 @@ static void cmd_help(void) {
     vga_puts("  spawn   - execute demo tasks\n");
     vga_puts("  yield   - Relinquish CPU to switch to the next ready process\n");
     vga_puts("  kill    - Terminate a process by its PID\n");
+    vga_puts("  threads     – List active kernel threads\n");
+    vga_puts("  thread_demo – Create two synchronized worker threads\n");
+    vga_puts("  thread_run  – Yield CPU to run ready worker threads\n");
     
     vga_puts_color("\n  Milestones (to implement):\n", VGA_LIGHT_CYAN, VGA_BLACK);
-    vga_puts("  kill    - [L09] Terminate a process\n");
-    vga_puts("  threads - [L10] List kernel threads\n");
     vga_puts("  free    - [L11] Show free memory\n");
     vga_puts("  ls      - [L12] List files\n");
     vga_puts("  cat     - [L12] Print file contents\n\n");
@@ -206,6 +212,28 @@ static void demo_task_b(void) {
     process_exit();
 }
 
+static void worker_thread_1(void) {
+    for (int i = 0; i < 3; i++) {
+        mutex_lock(&test_lock);
+        counter++;
+        vga_printf("  [Thread 1] Critical Section | Counter: %d\n", counter);
+        mutex_unlock(&test_lock);
+        thread_yield();
+    }
+    thread_exit();
+}
+
+static void worker_thread_2(void) {
+    for (int i = 0; i < 3; i++) {
+        mutex_lock(&test_lock);
+        counter++;
+        vga_printf("  [Thread 2] Critical Section | Counter: %d\n", counter);
+        mutex_unlock(&test_lock);
+        thread_yield();
+    }
+    thread_exit();
+}
+
 /* ---------------------------------------------------------------------------
  * Shell process
  * --------------------------------------------------------------------------*/
@@ -250,10 +278,24 @@ static void shell_run(void) {
             process_yield();
             continue;
         }
+        
+        if (k_strcmp(cmd, "threads") == 0) {
+            cmd_threads();
+            continue;
+        }
+        if (k_strcmp(cmd, "thread_demo") == 0) {
+            thread_create("worker_t1", worker_thread_1, 0);
+            thread_create("worker_t2", worker_thread_2, 0);
+            vga_puts_color("  Spawned worker_t1 and worker_t2. Run 'thread_run' to execute.\n", VGA_LIGHT_GREEN, VGA_BLACK);
+            continue;
+        }
+        if (k_strcmp(cmd, "thread_run") == 0) {
+            thread_yield();
+            continue;
+        }
 
         /* Milestone stubs */
-        if (k_strcmp(cmd, "threads") == 0 ||
-            k_strcmp(cmd, "free")    == 0 ||
+        if (k_strcmp(cmd, "free")    == 0 ||
             k_strcmp(cmd, "ls")      == 0 ||
             k_strcmp(cmd, "cat")     == 0) {
             vga_puts_color("  [TODO] This command is not yet implemented.\n",
@@ -275,8 +317,11 @@ void kernel_main(void) {
     vga_init();
     kb_init();
     process_init();
+    thread_init();
+    mutex_init(&test_lock);
     print_splash();
     shell_run();
+    
 
     /* Should never reach here */
     __asm__ __volatile__("hlt");

@@ -51,7 +51,8 @@ KERNEL_ASM_OBJS := $(patsubst kernel/%.asm, build/%.o, $(KERNEL_ASM_SRCS))
 KERNEL_C_SRCS   := kernel/kernel.c \
                    kernel/vga.c    \
                    kernel/keyboard.c \
-                   kernel/process.c
+                   kernel/process.c \
+                   kernel/thread.c
 KERNEL_C_OBJS   := $(patsubst kernel/%.c, build/%.o, $(KERNEL_C_SRCS))
 
 KERNEL_ELF      := build/kernel.elf
@@ -78,7 +79,7 @@ $(BOOT_BIN): $(BOOT_SRC)
 	$(AS) -f bin $< -o $@
 
 # ---------------------------------------------------------------------------
-# Kernel: Assembly object
+# Kernel: Assembly objects
 # ---------------------------------------------------------------------------
 build/%.o: kernel/%.asm
 	@mkdir -p build
